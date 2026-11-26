@@ -1,4 +1,4 @@
-package com.lynx.explorer.modules
+package com.hex4coder.upacara.modules
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -17,9 +17,31 @@ import com.lynx.tasm.behavior.LynxContext
  * Tidak memerlukan izin INTERNET: semua audio lokal.
  */
 class NativeUpacaraAudioModule(context: Context) : LynxModule(context) {
-    private var player: MediaPlayer? = null
-    private var volume: Float = 0.7f
-    private var laguAktif: String = ""
+
+    companion object {
+        @Volatile
+        private var player: MediaPlayer? = null
+        private var volume: Float = 0.7f
+        private var laguAktif: String = ""
+
+        private fun lepasPlayer(mediaPlayer: MediaPlayer) {
+            try {
+                if (mediaPlayer.isPlaying) mediaPlayer.stop()
+                mediaPlayer.reset()
+                mediaPlayer.release()
+            } catch (_: Exception) {
+                // Abaikan pelepasan yang gagal.
+            }
+        }
+
+        /** Dipanggil host saat Activity dihancurkan agar audio tidak berlanjut. */
+        @JvmStatic
+        fun hentikanSemua() {
+            player?.let { lepasPlayer(it) }
+            player = null
+            laguAktif = ""
+        }
+    }
 
     private fun appContext(): Context = (mContext as LynxContext).context
 
@@ -61,15 +83,7 @@ class NativeUpacaraAudioModule(context: Context) : LynxModule(context) {
 
     @LynxMethod
     fun stop() {
-        player?.let {
-            try {
-                if (it.isPlaying) it.stop()
-                it.reset()
-                it.release()
-            } catch (_: Exception) {
-                // Abaikan pelepasan yang gagal.
-            }
-        }
+        player?.let { lepasPlayer(it) }
         player = null
     }
 
@@ -86,10 +100,10 @@ class NativeUpacaraAudioModule(context: Context) : LynxModule(context) {
         val nilaiAwal = if (direction == "out") volume else 0f
         val nilaiAkhir = if (direction == "out") 0f else volume
         val langkah = 20
-        val jeda = (durasi / langkah).toLong().coerceAtLeast(1L)
+        val jeda = (durasi.toFloat() / langkah).toLong().coerceAtLeast(1L)
 
         Thread {
-            for (i in 0..langkah) {
+            for (i in 0 until langkah) {
                 if (player != mediaPlayer) return@Thread
                 val nilai = nilaiAwal + (nilaiAkhir - nilaiAwal) * (i.toFloat() / langkah)
                 mediaPlayer.setVolume(nilai, nilai)
@@ -98,6 +112,9 @@ class NativeUpacaraAudioModule(context: Context) : LynxModule(context) {
                 } catch (_: InterruptedException) {
                     return@Thread
                 }
+            }
+            if (player == mediaPlayer) {
+                mediaPlayer.setVolume(nilaiAkhir, nilaiAkhir)
             }
         }.start()
     }

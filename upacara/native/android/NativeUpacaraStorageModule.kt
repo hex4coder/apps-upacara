@@ -1,4 +1,4 @@
-package com.lynx.explorer.modules
+package com.hex4coder.upacara.modules
 
 import android.content.Context
 import android.content.SharedPreferences

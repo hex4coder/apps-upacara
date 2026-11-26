@@ -15,19 +15,24 @@ native/android/
 └── NativeUpacaraStorageModule.kt
 ```
 
-## 1. Salin modul ke host Android
+## 1. Hubungkan ke host Android
 
-Letakkan kedua file Kotlin di:
+Host di [`../android/`](../android/) sudah memakai folder ini langsung lewat:
 
-```text
-app/src/main/java/com/lynx/explorer/modules/
+```kotlin
+// ../android/app/build.gradle.kts
+sourceSets {
+    getByName("main") {
+        java.srcDir("../../native/android")
+    }
+}
 ```
 
-Jika host app Anda memakai package lain, sesuaikan `package` di kedua file dan import di file registrasi.
+Jadi tidak perlu menyalin file. Jika memakai host lain, salin kedua file Kotlin ke `app/src/main/java/<package>/` dan sesuaikan `package` serta import.
 
 ## 2. Daftarkan modul saat `LynxEnv` diinisialisasi
 
-Tambahkan ke `LynxModuleAdapter.Init(context)` (Lynx Explorer) atau ke fungsi `setupLynxEnv()` pada host app Anda:
+Pada host ini, registrasi ada di [`../android/app/src/main/java/com/hex4coder/upacara/UpacaraApplication.kt`](../android/app/src/main/java/com/hex4coder/upacara/UpacaraApplication.kt). Untuk Lynx Explorer, tambahkan ke `LynxModuleAdapter.Init(context)`:
 
 ```kotlin
 LynxEnv.inst().registerModule(
@@ -83,10 +88,8 @@ Karena `NativeModules` tidak ada di Lynx for Web, dan runtime Lynx juga **tidak 
 
 Dengan demikian UI tetap bisa diuji di browser tanpa APK, dan pesan "(simulasi)" ditampilkan saat lagu diputar.
 
-## 6. Belum termasuk
+## 6. Host Android
 
-Repo ini belum berisi project Gradle/APK karena Android SDK tidak tersedia di mesin pengembangan saat ini.
+Host Gradle ada di [`../android/`](../android/). Ia memuat `main.lynx.bundle` dari `assets/`, mendaftarkan kedua modul, dan tidak meminta izin `INTERNET`. `MainActivity` memanggil `NativeUpacaraAudioModule.hentikanSemua()` dan `lynxView.destroy()` saat Activity dihancurkan agar audio tidak berlanjut dan memory engine dilepaskan. Posisi `MediaPlayer` dibaca lewat `getCurrentPosition` oleh adapter audio.
 
-Untuk produksi, buat host Android dengan `LynxView`, salin bundle dari `dist/main.lynx.bundle` ke `assets/`, lalu daftarkan modul di atas.
-
-Referensi: <https://lynxjs.org/guide/use-native-modules>
+Referensi: <https://lynxjs.org/next/guide/use-native-modules>

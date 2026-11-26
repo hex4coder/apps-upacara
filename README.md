@@ -2,7 +2,7 @@
 
 Aplikasi Android/offline-first untuk operator sound system upacara Senin di sekolah. Dibangun dengan **Lynx + ReactLynx + Rspeedy + TypeScript**, dengan **Bun** sebagai runtime dan package manager.
 
-> **Status saat ini:** UI selesai dan bisa dijalankan di browser. Modul native Android untuk audio (`MediaPlayer`) dan penyimpanan (`SharedPreferences`) sudah disiapkan; browser memakai simulasi audio + session storage Lynx karena runtime Lynx tidak menyediakan Web Audio/localStorage.
+> **Status saat ini:** UI selesai dan bisa dijalankan di browser. Modul native (`MediaPlayer` + `SharedPreferences`) dan kerangka host Android dengan `LynxView` sudah disiapkan. Browser memakai simulasi audio + session storage Lynx karena runtime Lynx tidak menyediakan Web Audio/localStorage. APK belum di-build di mesin ini (Android SDK tidak tersedia).
 
 **Repository:** [github.com/hex4coder/apps-upacara](https://github.com/hex4coder/apps-upacara)
 
@@ -15,11 +15,12 @@ apps-upacara/
 ├── README.md              # dokumentasi ini
 ├── upacara/               # proyek aplikasi Lynx + Bun
 │   ├── src/               # UI + adapter audio/storage
-│   └── native/            # source module Android (Kotlin)
+│   ├── native/            # source kanonik module Android (Kotlin)
+│   └── android/           # host Android (Gradle + LynxView)
 └── design/                # desain visual FigCraft + preview PNG
 ```
 
-- **`upacara/`** — source code aplikasi, konfigurasi Lynx/Rspeedy, aset, tes, dan module native Android.
+- **`upacara/`** — source code aplikasi, konfigurasi Lynx/Rspeedy, aset, tes, module native, dan host Android.
 - **`design/`** — file desain `upacara-ui-v1.figcraft`, preview FigCraft, dan screenshot hasil render di browser.
 
 ---
@@ -118,6 +119,23 @@ Hasilnya:
 - `upacara/dist/main.lynx.bundle` untuk host Lynx/Android
 - `upacara/dist/main.web.bundle` untuk Lynx for Web
 
+Salin bundle ke host Android dengan:
+
+```bash
+bun run sync:android
+```
+
+Perintah ini build ulang lalu menaruh bundle di `upacara/android/app/src/main/assets/main.lynx.bundle`.
+
+Build APK (membutuhkan Android SDK 34 dan JDK 17):
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+hasilnya di `android/app/build/outputs/apk/debug/app-debug.apk`. Panduan lengkap ada di [`upacara/android/README.md`](upacara/android/README.md).
+
 ---
 
 ## Arsitektur singkat
@@ -129,7 +147,10 @@ upacara/src/
 ├── ui.tsx         # bottom navigation
 ├── data.ts        # daftar lagu + 12 cue upacara
 ├── App.css        # gaya visual sesuai design/
-└── index.tsx      # entry point ReactLynx
+├── index.tsx      # entry point ReactLynx
+├── lib/           # adapter audio + storage (native / fallback)
+├── typing.d.ts    # deklarasi NativeModules
+└── __tests__/     # tes Rstest
 ```
 
 Konfigurasi web/native ada di [`upacara/lynx.config.ts`](upacara/lynx.config.ts) melalui:
@@ -147,14 +168,14 @@ environments: {
 
 - Browser preview memakai **simulasi audio** (progress bar berjalan, tanpa suara) karena runtime Lynx tidak memiliki Web Audio.
 - Penyimpanan di browser memakai `lynx` session storage, jadi tidak bertahan setelah aplikasi ditutup.
-- Module Kotlin untuk `MediaPlayer` dan `SharedPreferences` sudah ada di [`upacara/native/`](upacara/native/), tetapi host APK belum dibuat karena Android SDK tidak tersedia di mesin ini.
+- Kerangka host Android sudah ada di [`upacara/android/`](upacara/android/), tetapi APK belum di-build karena Android SDK tidak tersedia di mesin pengembangan ini.
 - File audio produksi belum disertakan; perlu rekaman/aransemen instrumental yang legal.
 
 ---
 
 ## Rencana berikutnya
 
-1. Buat host Android dengan `LynxView` dan daftarkan module di `upacara/native/`.
-2. Salin `dist/main.lynx.bundle` ke `assets/` host Android.
-3. Tambahkan file audio legal ke `assets/audio/<id>.mp3`.
+1. Install Android SDK 34 + JDK 17, lalu build `upacara/android` dengan `./gradlew assembleDebug`.
+2. Tambahkan file audio legal ke `upacara/android/app/src/main/assets/audio/<id>.mp3`.
+3. Uji di perangkat nyata: fade, darurat, dan persistensi setelah aplikasi ditutup.
 4. Uji lapangan bersama operator sound system sekolah.
