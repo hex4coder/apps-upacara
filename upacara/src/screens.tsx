@@ -1,5 +1,5 @@
 import { useCallback, useState } from '@lynx-js/react';
-import { daftarCue, daftarLagu, kategoriFilter } from './data.js';
+import { daftarCue, daftarLagu, durasiKeDetik, formatWaktu, kategoriFilter } from './data.js';
 import type { Kategori, Lagu } from './data.js';
 
 /* ---------------- Beranda ---------------- */
@@ -133,25 +133,35 @@ export function PustakaLagu({ onPutar }: LaguProps) {
 interface PlayerProps {
   lagu: Lagu;
   sedangDiputar: boolean;
+  posisi: number;
+  cueAktif: number;
   volume: number;
+  fadeDetik: number;
   onToggle: () => void;
   onKembali: () => void;
   onHentikan: () => void;
   onVolume: (delta: number) => void;
-  onAksi: (pesan: string) => void;
+  onRestart: () => void;
+  onFade: (arah: 'in' | 'out') => void;
 }
 
 export function Player({
   lagu,
   sedangDiputar,
+  posisi,
+  cueAktif,
   volume,
+  fadeDetik,
   onToggle,
   onKembali,
   onHentikan,
   onVolume,
-  onAksi,
+  onRestart,
+  onFade,
 }: PlayerProps) {
   const [konfirmasi, setKonfirmasi] = useState(false);
+  const totalDetik = durasiKeDetik(lagu.durasi) || 1;
+  const persentase = Math.min(100, Math.max(0, (posisi / totalDetik) * 100));
 
   const tambahVolume = useCallback(() => {
     'background only';
@@ -163,16 +173,16 @@ export function Player({
   }, [onVolume]);
   const fadeIn = useCallback(() => {
     'background only';
-    onAksi('Fade in 3 detik');
-  }, [onAksi]);
+    onFade('in');
+  }, [onFade]);
   const fadeOut = useCallback(() => {
     'background only';
-    onAksi('Fade out 3 detik');
-  }, [onAksi]);
+    onFade('out');
+  }, [onFade]);
   const ulang = useCallback(() => {
     'background only';
-    onAksi('Lagu diulang dari awal');
-  }, [onAksi]);
+    onRestart();
+  }, [onRestart]);
   const hentikan = useCallback(() => {
     'background only';
     if (konfirmasi) {
@@ -191,7 +201,7 @@ export function Player({
         </view>
         <text className="judul judul--player">Sedang Diputar</text>
         <view className="chip-cue">
-          <text className="chip-cue-label">Cue 3 dari 12</text>
+          <text className="chip-cue-label">Cue {cueAktif} dari 12</text>
         </view>
       </view>
 
@@ -204,10 +214,10 @@ export function Player({
       <text className="player-pencipta">{lagu.pencipta + ' · Instrumental'}</text>
 
       <view className="progress-track">
-        <view className="progress-isi" />
+        <view className="progress-isi" style={{ width: persentase + '%' }} />
       </view>
       <view className="progress-waktu">
-        <text className="progress-waktu-label">1:12</text>
+        <text className="progress-waktu-label">{formatWaktu(posisi)}</text>
         <text className="progress-waktu-label">{lagu.durasi}</text>
       </view>
 
@@ -243,10 +253,10 @@ export function Player({
 
       <view className="aksi-row">
         <view className="aksi-chip" bindtap={fadeIn}>
-          <text className="aksi-label">Fade In 3s</text>
+          <text className="aksi-label">Fade In {fadeDetik}s</text>
         </view>
         <view className="aksi-chip" bindtap={fadeOut}>
-          <text className="aksi-label">Fade Out 3s</text>
+          <text className="aksi-label">Fade Out {fadeDetik}s</text>
         </view>
         <view className="aksi-chip" bindtap={ulang}>
           <text className="aksi-label">Ulangi</text>

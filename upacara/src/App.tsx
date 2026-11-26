@@ -1,7 +1,9 @@
-import { useCallback, useState } from '@lynx-js/react';
+import { useCallback, useEffect, useState } from '@lynx-js/react';
 import './App.css';
-import { daftarLagu } from './data.js';
+import { daftarLagu, durasiKeDetik } from './data.js';
 import type { Lagu } from './data.js';
+import * as audio from './lib/audio.js';
+import { bacaState, simpanState } from './lib/storage.js';
 import { Beranda, Player, PustakaLagu, Setelan, UrutanUpacara } from './screens.js';
 import { NavBar } from './ui.js';
 import type { Screen } from './ui.js';
@@ -10,10 +12,17 @@ export function App() {
   const [screen, setScreen] = useState<Screen>('beranda');
   const [lagu, setLagu] = useState<Lagu>(daftarLagu[0]);
   const [sedangDiputar, setSedangDiputar] = useState(false);
+  const [posisi, setPosisi] = useState(0);
   const [volume, setVolume] = useState(70);
-  const [cueAktif, setCueAktif] = useState(3);
+  const [cueAktif, setCueAktif] = useState(1);
   const [fade, setFade] = useState(3);
   const [pesan, setPesan] = useState('');
+  const [stateDimuat, setStateDimuat] = useState(false);
+
+  const tampilkanPesan = useCallback((teks: string) => {
+    'background only';
+    setPesan(teks);
+  }, []);
 
   const navigasi = useCallback((tujuan: Screen) => {
     'background only';
@@ -30,34 +39,52 @@ export function App() {
 
   const putarLagu = useCallback((pilihan: Lagu) => {
     'background only';
+    const berhasil = audio.putar(pilihan.id, volume);
+    const mode = audio.modeAudio();
     setLagu(pilihan);
-    setSedangDiputar(true);
+    setPosisi(0);
+    setSedangDiputar(berhasil);
     setScreen('player');
-    setPesan('Memutar: ' + pilihan.judul);
-  }, []);
+    setPesan(
+      berhasil
+        ? 'Memutar: ' + pilihan.judul + (mode === 'simulasi' ? ' (simulasi)' : '')
+        : 'Audio belum tersedia di host ini',
+    );
+  }, [volume]);
 
   const putarJudul = useCallback((judul: string) => {
     'background only';
     const ditemukan = daftarLagu.find((item) => item.judul === judul);
     if (ditemukan) {
-      setLagu(ditemukan);
-      setSedangDiputar(true);
-      setScreen('player');
-      setPesan('Memutar: ' + judul);
+      putarLagu(ditemukan);
     } else {
       setPesan('Lagu belum tersedia: ' + judul);
     }
-  }, []);
+  }, [putarLagu]);
 
   const togglePutar = useCallback(() => {
     'background only';
-    setSedangDiputar((nilai) => !nilai);
-  }, []);
+    if (sedangDiputar) {
+      audio.jeda();
+      setSedangDiputar(false);
+      setPesan('Dijeda');
+      return;
+    }
+    const berhasil = audio.lanjutkan();
+    if (berhasil) {
+      setSedangDiputar(true);
+      setPesan('Dilanjutkan');
+    } else {
+      setPesan('Tidak ada lagu untuk dilanjutkan');
+    }
+  }, [sedangDiputar]);
 
   const ubahVolume = useCallback((delta: number) => {
     'background only';
-    setVolume((nilai) => Math.max(0, Math.min(100, nilai + delta)));
-  }, []);
+    const berikutnya = Math.max(0, Math.min(100, volume + delta));
+    setVolume(berikutnya);
+    audio.ubahVolume(berikutnya);
+  }, [volume]);
 
   const lanjutCue = useCallback(() => {
     'background only';
@@ -71,16 +98,33 @@ export function App() {
     setPesan('Cue dilewati');
   }, []);
 
-  const hentikanSemua = useCallback(() => {
+  const restartLagu = useCallback(() => {
     'background only';
-    setSedangDiputar(false);
-    setVolume(70);
-    setPesan('Semua audio dihentikan · volume 70%');
+    const berhasil = audio.ulangi();
+    setPosisi(0);
+    setSedangDiputar(berhasil);
+    setPesan('Lagu diulang dari awal');
   }, []);
 
-  const tampilkanPesan = useCallback((teks: string) => {
+  const jalankanFade = useCallback((arah: 'in' | 'out') => {
     'background only';
-    setPesan(teks);
+    audio.fade(fade, arah);
+    if (arah === 'out') {
+      setTimeout(() => setSedangDiputar(false), fade * 1000);
+    }
+    setPesan(arah === 'in'
+      ? 'Fade in ' + fade + ' detik'
+      : 'Fade out ' + fade + ' detik');
+  }, [fade]);
+
+  const hentikanSemua = useCallback(() => {
+    'background only';
+    audio.hentikan();
+    setSedangDiputar(false);
+    setPosisi(0);
+    setVolume(70);
+    audio.ubahVolume(70);
+    setPesan('Semua audio dihentikan · volume 70%');
   }, []);
 
   const ubahFade = useCallback((nilai: number) => {
@@ -88,6 +132,40 @@ export function App() {
     setFade(nilai);
     setPesan('Fade default: ' + nilai + ' detik');
   }, []);
+
+  const simpanPengaturan = useCallback(() => {
+    'background only';
+    simpanState({ cueAktif, volume, fade });
+    setPesan('Pengaturan disimpan');
+  }, [cueAktif, volume, fade]);
+
+  // Pulihkan progres & setelan dari SharedPreferences (native) atau localStorage (browser).
+  useEffect(() => {
+    bacaState((state) => {
+      if (state) {
+        setCueAktif(state.cueAktif);
+        setVolume(state.volume);
+        setFade(state.fade);
+        audio.ubahVolume(state.volume);
+      }
+      setStateDimuat(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!stateDimuat) return;
+    simpanState({ cueAktif, volume, fade });
+  }, [stateDimuat, cueAktif, volume, fade]);
+
+  // Progress bar mengikuti posisi audio yang sebenarnya.
+  useEffect(() => {
+    if (!sedangDiputar) return;
+    const total = durasiKeDetik(lagu.durasi);
+    const timer = setInterval(() => {
+      setPosisi(Math.min(total, audio.posisiDetik()));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [sedangDiputar, lagu]);
 
   return (
     <view className="app-root">
@@ -99,12 +177,16 @@ export function App() {
         <Player
           lagu={lagu}
           sedangDiputar={sedangDiputar}
+          posisi={posisi}
+          cueAktif={cueAktif}
           volume={volume}
+          fadeDetik={fade}
           onToggle={togglePutar}
           onKembali={() => navigasi('lagu')}
           onHentikan={hentikanSemua}
           onVolume={ubahVolume}
-          onAksi={tampilkanPesan}
+          onRestart={restartLagu}
+          onFade={jalankanFade}
         />
       )}
       {screen === 'urutan' && (
@@ -116,7 +198,12 @@ export function App() {
         />
       )}
       {screen === 'setelan' && (
-        <Setelan fade={fade} volume={volume} onFade={ubahFade} onAksi={tampilkanPesan} />
+        <Setelan
+          fade={fade}
+          volume={volume}
+          onFade={ubahFade}
+          onAksi={simpanPengaturan}
+        />
       )}
 
       {pesan !== '' && (

@@ -21,6 +21,21 @@ export const daftarLagu: Lagu[] = [
 
 export const kategoriFilter = ['Semua', 'Nasional', 'Khidmat', 'Mars', 'Pengiring'] as const;
 
+/** Ubah "3:24" menjadi 204 detik untuk progress bar. */
+export function durasiKeDetik(durasi: string): number {
+  const [menit, detik] = durasi.split(':').map(Number);
+  if (!Number.isFinite(menit) || !Number.isFinite(detik)) return 0;
+  return menit * 60 + detik;
+}
+
+/** Format detik menjadi "m:ss". */
+export function formatWaktu(detik: number): string {
+  const aman = Math.max(0, Math.floor(detik));
+  const menit = Math.floor(aman / 60);
+  const sisa = aman % 60;
+  return menit + ':' + String(sisa).padStart(2, '0');
+}
+
 export interface Cue {
   nomor: number;
   jam: string;

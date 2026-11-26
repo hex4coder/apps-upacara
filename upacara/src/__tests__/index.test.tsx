@@ -9,7 +9,7 @@ import { App } from '../App';
 
 test('App', async () => {
   const { findByText } = render(<App />);
-  const element = await findByText('Tap the logo and have fun!');
+  const element = await findByText('UPACARA');
 
   expect(element).toBeInTheDocument();
 });

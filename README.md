@@ -2,7 +2,7 @@
 
 Aplikasi Android/offline-first untuk operator sound system upacara Senin di sekolah. Dibangun dengan **Lynx + ReactLynx + Rspeedy + TypeScript**, dengan **Bun** sebagai runtime dan package manager.
 
-> **Status saat ini:** UI/prototype selesai dan bisa dijalankan di browser lewat Lynx for Web. Audio masih berupa simulasi state; pemutaran nyata memerlukan NativeModule Android.
+> **Status saat ini:** UI selesai dan bisa dijalankan di browser. Modul native Android untuk audio (`MediaPlayer`) dan penyimpanan (`SharedPreferences`) sudah disiapkan; browser memakai simulasi audio + session storage Lynx karena runtime Lynx tidak menyediakan Web Audio/localStorage.
 
 **Repository:** [github.com/hex4coder/apps-upacara](https://github.com/hex4coder/apps-upacara)
 
@@ -14,10 +14,12 @@ Aplikasi Android/offline-first untuk operator sound system upacara Senin di seko
 apps-upacara/
 ├── README.md              # dokumentasi ini
 ├── upacara/               # proyek aplikasi Lynx + Bun
+│   ├── src/               # UI + adapter audio/storage
+│   └── native/            # source module Android (Kotlin)
 └── design/                # desain visual FigCraft + preview PNG
 ```
 
-- **`upacara/`** — source code aplikasi, konfigurasi Lynx/Rspeedy, aset, dan tes.
+- **`upacara/`** — source code aplikasi, konfigurasi Lynx/Rspeedy, aset, tes, dan module native Android.
 - **`design/`** — file desain `upacara-ui-v1.figcraft`, preview FigCraft, dan screenshot hasil render di browser.
 
 ---
@@ -143,16 +145,16 @@ environments: {
 
 ## Batasan saat ini
 
-- Belum ada izin atau pemutaran audio nyata; tombol masih mengubah state UI.
-- Fade in/out dan kontrol volume belum terhubung ke MediaPlayer/ExoPlayer.
-- Belum ada penyimpanan lokal persisten untuk urutan cue dan pengaturan.
-- Untuk APK produksi, perlu riset/implementasi **NativeModule Android** dan integrasi file audio lokal.
+- Browser preview memakai **simulasi audio** (progress bar berjalan, tanpa suara) karena runtime Lynx tidak memiliki Web Audio.
+- Penyimpanan di browser memakai `lynx` session storage, jadi tidak bertahan setelah aplikasi ditutup.
+- Module Kotlin untuk `MediaPlayer` dan `SharedPreferences` sudah ada di [`upacara/native/`](upacara/native/), tetapi host APK belum dibuat karena Android SDK tidak tersedia di mesin ini.
+- File audio produksi belum disertakan; perlu rekaman/aransemen instrumental yang legal.
 
 ---
 
 ## Rencana berikutnya
 
-1. Riset API NativeModule Lynx untuk audio Android.
-2. Hubungkan daftar lagu ke file audio lokal.
-3. Simpan progres cue dan pengaturan secara offline.
+1. Buat host Android dengan `LynxView` dan daftarkan module di `upacara/native/`.
+2. Salin `dist/main.lynx.bundle` ke `assets/` host Android.
+3. Tambahkan file audio legal ke `assets/audio/<id>.mp3`.
 4. Uji lapangan bersama operator sound system sekolah.
