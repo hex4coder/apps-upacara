@@ -1,0 +1,16 @@
+# Dependensi & build hasil
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Sistem operasi / editor
+.DS_Store
+*.local
+*.log*
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Rahasia
+.env
+.env.*
