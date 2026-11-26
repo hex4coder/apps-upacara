@@ -4,6 +4,8 @@ Aplikasi Android/offline-first untuk operator sound system upacara Senin di seko
 
 > **Status saat ini:** UI/prototype selesai dan bisa dijalankan di browser lewat Lynx for Web. Audio masih berupa simulasi state; pemutaran nyata memerlukan NativeModule Android.
 
+**Repository:** [github.com/hex4coder/apps-upacara](https://github.com/hex4coder/apps-upacara)
+
 ---
 
 ## Isi repository
