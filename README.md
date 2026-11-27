@@ -2,7 +2,7 @@
 
 Aplikasi Android/offline-first untuk operator sound system upacara Senin di sekolah. Dibangun dengan **Lynx + ReactLynx + Rspeedy + TypeScript**, dengan **Bun** sebagai runtime dan package manager.
 
-> **Status saat ini:** UI selesai dan bisa dijalankan di browser. Modul native (`MediaPlayer` + `SharedPreferences`) dan kerangka host Android dengan `LynxView` sudah disiapkan. Browser memakai simulasi audio + session storage Lynx karena runtime Lynx tidak menyediakan Web Audio/localStorage. APK belum di-build di mesin ini (Android SDK tidak tersedia).
+> **Status saat ini:** UI selesai dan bisa dijalankan di browser. Modul native (`MediaPlayer` + `SharedPreferences`), host Android `LynxView`, dan 7 MP3 legal sudah disertakan. **APK debug berhasil di-build** di `upacara/android/app/build/outputs/apk/debug/app-debug.apk`. Browser memakai simulasi audio + session storage Lynx karena runtime Lynx tidak menyediakan Web Audio/localStorage. `gugur-bunga` sengaja tidak disertakan karena belum ada rekaman berlisensi yang diizinkan.
 
 **Repository:** [github.com/hex4coder/apps-upacara](https://github.com/hex4coder/apps-upacara)
 
@@ -13,15 +13,16 @@ Aplikasi Android/offline-first untuk operator sound system upacara Senin di seko
 ```text
 apps-upacara/
 ├── README.md              # dokumentasi ini
+├── AUDIO_CREDITS.md       # sumber, lisensi, dan checksum audio
 ├── upacara/               # proyek aplikasi Lynx + Bun
 │   ├── src/               # UI + adapter audio/storage
 │   ├── native/            # source kanonik module Android (Kotlin)
-│   └── android/           # host Android (Gradle + LynxView)
+│   └── android/           # host Android (Gradle + LynxView + MP3)
 └── design/                # desain visual FigCraft + preview PNG
 ```
 
 - **`upacara/`** — source code aplikasi, konfigurasi Lynx/Rspeedy, aset, tes, module native, dan host Android.
-- **`design/`** — file desain `upacara-ui-v1.figcraft`, preview FigCraft, dan screenshot hasil render di browser.
+- **`design/`** — file desain `upacara-ui-v1.figcraft`, preview FigCraft, screenshot hasil render di browser, dan pointer singkat ke sumber audio.
 
 ---
 
@@ -83,7 +84,7 @@ Aturan aksesibilitas: target sentuh minimal **72 dp**, jarak tombol darurat **24
 4. **Urutan Upacara** — 12 cue dengan jam, catatan operator, progres, dan lagu terkait.
 5. **Setelan** — durasi fade, volume maksimal aman, perangkat audio, kontras tinggi.
 
-Kandidat lagu awal mencakup **Indonesia Raya**, **Mengheningkan Cipta** (*Truno Prawit* — sebelumnya disebut “Hening Cipta”), **Garuda Pancasila**, **Gugur Bunga**, **Bangun Pemudi Pemuda**, **Maju Tak Gentar**, **Tanah Airku**, dan **Doa (Nada Khidmat)**.
+Kandidat lagu awal mencakup **Indonesia Raya**, **Mengheningkan Cipta** (*Truno Prawit* — sebelumnya disebut “Hening Cipta”), **Garuda Pancasila**, **Gugur Bunga**, **Bangun Pemudi Pemuda**, **Maju Tak Gentar**, **Tanah Airku**, dan **Doa (Nada Khidmat)**. Tujuh dari delapan entri sudah memiliki MP3 legal; **Gugur Bunga** ditandai “Tidak tersedia” sampai ada rekaman berlisensi yang diizinkan. Detail ada di [`AUDIO_CREDITS.md`](AUDIO_CREDITS.md).
 
 ---
 
@@ -134,7 +135,7 @@ cd android
 ./gradlew assembleDebug
 ```
 
-hasilnya di `android/app/build/outputs/apk/debug/app-debug.apk`. Panduan lengkap ada di [`upacara/android/README.md`](upacara/android/README.md).
+Hasilnya di `android/app/build/outputs/apk/debug/app-debug.apk` (sudah dibuat di mesin ini). Panduan lengkap, termasuk catatan build di host ARM64, ada di [`upacara/android/README.md`](upacara/android/README.md). Verifikasi APK: 7 MP3 + `main.lynx.bundle` ikut terpaket dan manifest tidak meminta izin `INTERNET`.
 
 ---
 

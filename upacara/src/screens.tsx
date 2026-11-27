@@ -78,7 +78,7 @@ function BarisLagu({ lagu, onPutar }: { lagu: Lagu; onPutar: (lagu: Lagu) => voi
       <view className="info-lagu">
         <text className="lagu-judul">{lagu.judul}</text>
         <text className="lagu-meta">{lagu.pencipta + ' · ' + lagu.durasi}</text>
-        <text className="lagu-kategori">{lagu.kategori}</text>
+        <text className="lagu-kategori">{lagu.tersedia === false ? 'Tidak tersedia' : lagu.kategori}</text>
       </view>
     </view>
   );
@@ -100,7 +100,7 @@ export function PustakaLagu({ onPutar }: LaguProps) {
     <view className="layar">
       <view className="header header--halaman">
         <text className="judul judul--halaman">Pustaka Lagu</text>
-        <text className="subjudul">{daftarLagu.length + ' lagu tersedia offline'}</text>
+        <text className="subjudul">{daftarLagu.filter((lagu) => lagu.tersedia !== false).length + ' lagu tersedia offline'}</text>
       </view>
 
       <view className="kolom-cari">

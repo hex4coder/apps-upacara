@@ -39,6 +39,10 @@ export function App() {
 
   const putarLagu = useCallback((pilihan: Lagu) => {
     'background only';
+    if (pilihan.tersedia === false) {
+      setPesan('Audio tidak tersedia: ' + pilihan.judul + ' · lihat AUDIO_CREDITS.md');
+      return;
+    }
     const berhasil = audio.putar(pilihan.id, volume);
     const mode = audio.modeAudio();
     setLagu(pilihan);

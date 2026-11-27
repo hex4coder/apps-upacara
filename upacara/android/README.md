@@ -22,6 +22,24 @@ cd android
 
 APK debug ada di `app/build/outputs/apk/debug/app-debug.apk`.
 
+### Catatan host ARM64
+
+AGP mengambil `aapt2` berbentuk biner x86-64 dari Maven. Pada host ARM64 yang
+memblokir biner x86 (misalnya lingkungan DroidDeck tanpa Steam Runtime), jalankan
+`aapt2` tersebut lewat `box64` dan beri tahu Gradle:
+
+```bash
+export GRADLE_OPTS="-Dorg.gradle.project.android.aapt2FromMavenOverride=/path/aapt2-box64"
+./gradlew assembleDebug
+```
+
+di mana `/path/aapt2-box64` adalah skrip pembungkus:
+
+```sh
+#!/bin/sh
+exec /usr/bin/box64 /path/aapt2-real "$@"
+```
+
 Untuk memasang ke perangkat yang terhubung:
 
 ```bash
@@ -62,17 +80,24 @@ sudah menandai fungsinya dengan `'background only'`.
 
 ## Audio lokal
 
-Taruh file audio legal di:
+File audio dibundle di:
 
 ```text
 app/src/main/assets/audio/<id>.mp3
 ```
 
-Id yang dipakai: `indonesia-raya`, `mengheningkan-cipta`, `garuda-pancasila`,
-`gugur-bunga`, `bangun-pemudi-pemuda`, `maju-tak-gentar`, `tanah-airku`, `doa-khidmat`.
+Yang sudah disertakan: `indonesia-raya`, `mengheningkan-cipta`,
+`garuda-pancasila`, `bangun-pemudi-pemuda`, `maju-tak-gentar`, `tanah-airku`,
+dan `doa-khidmat` (MP3 mono ~96 kbps). `gugur-bunga` **tidak disertakan**
+karena belum ada rekaman dengan lisensi yang diizinkan proyek; entri ini
+ditandai “Tidak tersedia” di UI dan menekan tombolnya tidak memutar audio.
 
-Jika file belum ada, aplikasi tetap berjalan dan modul audio hanya mencatat peringatan;
-progress bar di browser memakai simulasi timer.
+Sumber, atribusi, lisensi, dan SHA-256 ada di
+[`../../AUDIO_CREDITS.md`](../../AUDIO_CREDITS.md). Salinan ringkas ikut
+disertakan sebagai `app/src/main/assets/audio/CREDITS.md`.
+
+Jika berkas tidak ditemukan, modul audio hanya mencatat peringatan; progress
+bar di browser memakai simulasi timer.
 
 ## Offline dan izin
 

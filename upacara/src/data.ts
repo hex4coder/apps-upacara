@@ -6,17 +6,19 @@ export interface Lagu {
   pencipta: string;
   durasi: string;
   kategori: Kategori;
+  /** false jika belum ada rekaman dengan lisensi yang diizinkan. */
+  tersedia?: boolean;
 }
 
 export const daftarLagu: Lagu[] = [
-  { id: 'indonesia-raya', judul: 'Indonesia Raya', pencipta: 'W. R. Supratman', durasi: '3:24', kategori: 'Nasional' },
-  { id: 'mengheningkan-cipta', judul: 'Mengheningkan Cipta', pencipta: 'Truno Prawit', durasi: '2:58', kategori: 'Khidmat' },
-  { id: 'garuda-pancasila', judul: 'Garuda Pancasila', pencipta: 'Sudharnoto', durasi: '3:10', kategori: 'Nasional' },
-  { id: 'gugur-bunga', judul: 'Gugur Bunga', pencipta: 'Ismail Marzuki', durasi: '4:05', kategori: 'Khidmat' },
-  { id: 'bangun-pemudi-pemuda', judul: 'Bangun Pemudi Pemuda', pencipta: 'Alfred Simanjuntak', durasi: '2:41', kategori: 'Mars' },
-  { id: 'maju-tak-gentar', judul: 'Maju Tak Gentar', pencipta: 'Cornel Simanjuntak', durasi: '2:32', kategori: 'Mars' },
-  { id: 'tanah-airku', judul: 'Tanah Airku', pencipta: 'Ibu Soed', durasi: '3:36', kategori: 'Nasional' },
-  { id: 'doa-khidmat', judul: 'Doa (Nada Khidmat)', pencipta: 'Aransemen sekolah', durasi: '1:48', kategori: 'Khidmat' },
+  { id: 'indonesia-raya', judul: 'Indonesia Raya', pencipta: 'W. R. Supratman', durasi: '1:49', kategori: 'Nasional' },
+  { id: 'mengheningkan-cipta', judul: 'Mengheningkan Cipta', pencipta: 'Truno Prawit', durasi: '2:03', kategori: 'Khidmat' },
+  { id: 'garuda-pancasila', judul: 'Garuda Pancasila', pencipta: 'Sudharnoto', durasi: '3:14', kategori: 'Nasional' },
+  { id: 'gugur-bunga', judul: 'Gugur Bunga', pencipta: 'Ismail Marzuki', durasi: '4:05', kategori: 'Khidmat', tersedia: false },
+  { id: 'bangun-pemudi-pemuda', judul: 'Bangun Pemudi Pemuda', pencipta: 'Alfred Simanjuntak', durasi: '3:34', kategori: 'Mars' },
+  { id: 'maju-tak-gentar', judul: 'Maju Tak Gentar', pencipta: 'Cornel Simanjuntak', durasi: '3:39', kategori: 'Mars' },
+  { id: 'tanah-airku', judul: 'Tanah Airku', pencipta: 'Ibu Soed', durasi: '3:59', kategori: 'Nasional' },
+  { id: 'doa-khidmat', judul: 'Doa (Nada Khidmat)', pencipta: 'Aransemen proyek ini', durasi: '1:48', kategori: 'Khidmat' },
 ];
 
 export const kategoriFilter = ['Semua', 'Nasional', 'Khidmat', 'Mars', 'Pengiring'] as const;

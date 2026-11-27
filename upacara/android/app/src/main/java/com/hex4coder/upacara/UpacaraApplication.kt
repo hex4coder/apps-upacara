@@ -13,7 +13,7 @@ class UpacaraApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         LynxServiceCenter.inst().registerService(LynxLogService)
-        LynxEnv.inst().init(applicationContext, null, null, null)
+        LynxEnv.inst().init(this, null, null, null)
 
         // Nama harus identik dengan deklarasi di src/typing.d.ts.
         LynxEnv.inst().registerModule(
